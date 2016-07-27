@@ -20,7 +20,7 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 public class CommandBPortals implements CommandExecutor {
 
     private BungeePortals plugin;
-    private Map<String, List<String>> selections = new HashMap<>();
+    public static Map<String, List<String>> selections = new HashMap<>();
 
     public CommandBPortals(BungeePortals plugin) {
         this.plugin = plugin;

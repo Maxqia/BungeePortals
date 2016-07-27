@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.yofuzzy3.BungeePortals.BungeePortals;
+import net.yofuzzy3.BungeePortals.Commands.CommandBPortals;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -15,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class EventListener implements Listener {
 
@@ -39,6 +41,16 @@ public class EventListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         cooldown.put(event.getPlayer(), System.currentTimeMillis());
+    }
+
+    @EventHandler
+    public void onQuit (PlayerQuitEvent event) {
+        // Cleanup to prevent a memory leak
+        Player player = event.getPlayer();
+        String playerName = player.getName();
+        cooldown.remove(player);
+        statusData.remove(playerName);
+        CommandBPortals.selections.remove(playerName);
     }
 
     @EventHandler
