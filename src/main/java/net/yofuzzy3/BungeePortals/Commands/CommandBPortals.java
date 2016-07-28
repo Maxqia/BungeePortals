@@ -34,7 +34,6 @@ public class CommandBPortals implements CommandExecutor {
                     String playerName = sender.getName();
                     if (args.length >= 1) {
                         switch (args[0].toLowerCase()) {
-                            case "select": select(player,args); break;
                             case "reload":
                                 plugin.loadConfigFiles();
                                 plugin.loadPortalsData();
@@ -44,27 +43,18 @@ public class CommandBPortals implements CommandExecutor {
                                 plugin.savePortalsData();
                                 sender.sendMessage(ChatColor.GREEN + "Portal data saved!");
                                 break;
-                            case "clear":
-                                if (selections.containsKey(playerName)) {
-                                    selections.remove(playerName);
-                                    sender.sendMessage(ChatColor.GREEN + "Selection cleared.");
-                                } else {
-                                    sender.sendMessage(ChatColor.RED + "You haven't selected anything.");
-                                }
-                                break;
                             case "create":
-                                if (selections.containsKey(playerName)) {
+                                if (select(player, ((args.length >= 3) ? args[2] : null) )) {
                                     List<String> selection = selections.get(playerName);
                                     for (String block : selection) {
                                         plugin.portalData.put(block, args[1]);
                                     }
                                     player.sendMessage(ChatColor.GREEN + String.valueOf(selection.size()) + " portals have been created.");
-                                } else {
-                                    player.sendMessage(ChatColor.RED + "You haven't selected anything.");
+                                    selections.remove(playerName);
                                 }
                                 break;
                             case "remove":
-                                if (selections.containsKey(playerName)) {
+                                if (select(player, null)) {
                                     int count = 0;
                                     for (String block : selections.get(playerName)) {
                                         if (plugin.portalData.containsKey(block)) {
@@ -73,8 +63,7 @@ public class CommandBPortals implements CommandExecutor {
                                         }
                                     }
                                     sender.sendMessage(ChatColor.GREEN + String.valueOf(count) + " portals have been removed.");
-                                } else {
-                                    sender.sendMessage(ChatColor.RED + "You haven't selected anything.");
+                                    selections.remove(playerName);
                                 }
                                 break;
                             default: help(sender);
@@ -91,10 +80,8 @@ public class CommandBPortals implements CommandExecutor {
         sender.sendMessage(ChatColor.BLUE + "BungeePortals v" + plugin.getDescription().getVersion() + " by YoFuzzy3");
         sender.sendMessage(ChatColor.GREEN + "/BPortals reload " + ChatColor.RED + "Reload all files and data.");
         sender.sendMessage(ChatColor.GREEN + "/BPortals forcesave " + ChatColor.RED + "Force-save portals.");
-        sender.sendMessage(ChatColor.GREEN + "/BPortals select <filter,list> " + ChatColor.RED + "Get selection.");
-        sender.sendMessage(ChatColor.GREEN + "/BPortals clear " + ChatColor.RED + "Clear selection.");
-        sender.sendMessage(ChatColor.GREEN + "/BPortals create <destination> " + ChatColor.RED + "Create portals.");
-        sender.sendMessage(ChatColor.GREEN + "/BPortals remove <destination> " + ChatColor.RED + "Remove portals.");
+        sender.sendMessage(ChatColor.GREEN + "/BPortals create <destination> <filter,list> " + ChatColor.RED + "Create portals.");
+        sender.sendMessage(ChatColor.GREEN + "/BPortals remove " + ChatColor.RED + "Remove portals.");
         sender.sendMessage(ChatColor.BLUE + "Visit www.spigotmc.org/resources/bungeeportals.19 for help.");
     }
 
@@ -112,7 +99,7 @@ public class CommandBPortals implements CommandExecutor {
         return locations;
     }
 
-    private void select(CommandSender sender, String[] args) {
+    private boolean select(CommandSender sender, String args) {
         Player player = (Player) sender;
         String playerName = player.getName();
         Selection selection = plugin.worldEdit.getSelection(player);
@@ -124,8 +111,8 @@ public class CommandBPortals implements CommandExecutor {
                 int count = 0;
                 int filtered = 0;
                 boolean filter = false;
-                if (!args[1].equals("0")) {
-                    ids = args[1].split(",");
+                if (args != null) {
+                    ids = args.split(",");
                     filter = true;
                 }
                 for (Location location : locations) {
@@ -159,12 +146,13 @@ public class CommandBPortals implements CommandExecutor {
                 }
                 selections.put(playerName, blocks);
                 sender.sendMessage(ChatColor.GREEN + String.valueOf(count) + " blocks have been selected, " + String.valueOf(filtered) + " filtered.");
-                sender.sendMessage(ChatColor.GREEN + "Use the selection in the create and remove commands.");
+                return true;
             } else {
                 sender.sendMessage(ChatColor.RED + "Must be a cuboid selection!");
             }
         } else {
             sender.sendMessage(ChatColor.RED + "You have to first create a WorldEdit selection!");
         }
+        return false;
     }
 }
